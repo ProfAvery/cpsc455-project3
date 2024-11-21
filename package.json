@@ -1,0 +1,22 @@
+{
+  "name": "cpsc455-project3",
+  "version": "1.0.0",
+  "description": "CPSC 455 - Fall 2024",
+  "scripts": {
+    "start": "nodemon --env-file .env index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ProfAvery/cpsc455-project3.git"
+  },
+  "author": "Kenytt Avery",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  },
+  "dependencies": {
+    "cookie-session": "^2.1.0",
+    "express": "^4.21.1",
+    "sqlite3": "^5.1.7"
+  }
+}

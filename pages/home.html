@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Pingy McPingface</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+</head>
+
+<body>
+  <header>
+    <h1>Ping Statistics</h1>
+  </header>
+
+  <main>
+    <section>
+      <form method="POST" action="/ping">
+        <p>
+          <label for="hostname">Hostname:</label>
+          <input type="text" id="hostname" name="hostname" />
+        </p>
+        <p>
+          <input type="submit" value="Ping" />
+        </p>
+      </form>
+    </section>
+    ${ _.output ? '<section><pre><code>' + _.output + '</code></pre></section>' : '' }
+    <hr>
+    <section>
+      <header>
+        <h2>Recent results</h2>
+      </header>
+      <table>
+        <thead>
+          <tr>
+            <th>UTC Timestamp</th>
+            <th>Hostname</th>
+            <!-- <th>IP Address</th> -->
+            <th>Average Round-Trip Time</th>
+          </tr>
+        </thead>
+        ${ _.results.map(result =>
+          '<tr>' +
+            '<td>' + result.timestamp + '</td>' +
+            '<td>' + result.hostname + '</td>' +
+            '<td>' + result.round_trip_time + '</td>' +
+            '</tr>'
+        ).join('\n') }
+      </table>
+    </section>
+
+    <article>
+    </article>
+  </main>
+</body>
+
+</html>
