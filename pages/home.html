@@ -34,14 +34,15 @@
           <tr>
             <th>UTC Timestamp</th>
             <th>Hostname</th>
-            <!-- <th>IP Address</th> -->
             <th>Average Round-Trip Time</th>
           </tr>
         </thead>
         ${ _.results.map(result =>
           '<tr>' +
             '<td>' + result.timestamp + '</td>' +
-            '<td>' + result.hostname + '</td>' +
+            '<td><a href="/?page=history&hostname=' +
+              result.hostname + '">' + result.hostname +
+            '</a></td>' +
             '<td>' + result.round_trip_time + '</td>' +
             '</tr>'
         ).join('\n') }

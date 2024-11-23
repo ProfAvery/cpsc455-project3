@@ -1,8 +1,3 @@
-CREATE TABLE hosts (
-  hostname VARCHAR,
-  ip_address VARCHAR
-);
-
 CREATE TABLE results(
     hostname VARCHAR,
     round_trip_time REAL,

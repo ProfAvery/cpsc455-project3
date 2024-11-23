@@ -19,6 +19,8 @@ const dbAll = util.promisify(db.all).bind(db)
 const dbExec = util.promisify(db.exec).bind(db)
 db.on('trace', console.log)
 
+const yaml = require('yaml')
+
 app.get('/', async (req, res) => {
   const page = req.query.page
 
@@ -46,6 +48,29 @@ app.get('/', async (req, res) => {
         ORDER BY
           timestamp DESC
         LIMIT 10
+      `)
+
+      break
+
+    case 'history':
+      const hostname = req.query.hostname
+      _.hostname = hostname
+      const cmd = `dig +yaml ${hostname} 2>&1`
+      const { stdout } = await childProcessExec(cmd)
+      const response = yaml.parse(stdout)
+      _.answer = response[0].message.response_message_data?.ANSWER_SECTION?.join('\n')
+      console.log(_.answer)
+
+      _.history = await dbAll(`
+        SELECT
+          *
+        FROM
+          results
+        WHERE
+          hostname = '${hostname}'
+        ORDER BY
+          timestamp DESC
+        LIMIT 100
       `)
 
       break
@@ -99,24 +124,3 @@ app.listen(process.env.PORT, async () => {
   console.log(`Server running at http://${os.hostname()}:${process.env.PORT}/`)
 })
 
-/*
-
-Server:         10.0.2.3
-Address:        10.0.2.3#53
-
-Non-authoritative answer:
-Name:   www.google.com
-Address: 142.250.188.228
-Name:   www.google.com
-Address: 2607:f8b0:4007:818::2004
-ss
-PING www.google.com (142.251.40.36) 56(84) bytes of data.
-64 bytes from lax17s55-in-f4.1e100.net (142.251.40.36): icmp_seq=1 ttl=63 time=15.8 ms
-64 bytes from lax17s55-in-f4.1e100.net (142.251.40.36): icmp_seq=2 ttl=63 time=14.7 ms
-64 bytes from lax17s55-in-f4.1e100.net (142.251.40.36): icmp_seq=3 ttl=63 time=16.3 ms
-64 bytes from lax17s55-in-f4.1e100.net (142.251.40.36): icmp_seq=4 ttl=63 time=14.2 ms
-
---- www.google.com ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3008ms
-rtt min/avg/max/mdev = 14.160/15.234/16.281/0.842 ms
-*/
