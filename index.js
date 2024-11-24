@@ -40,20 +40,36 @@ app.get('/', async (req, res) => {
 
       try {
         _.results = await dbAll(`
+          WITH latest_comments AS (
+            SELECT
+              hostname,
+              comment,
+              MAX(timestamp) AS timestamp
+            FROM
+              comments
+            GROUP BY
+              hostname
+          )
           SELECT
             MAX(results.timestamp) AS timestamp,
             results.hostname,
-            ROUND(AVG(round_trip_time), 2) as round_trip_time,
+            ROUND(AVG(round_trip_time), 2) AS round_trip_time,
             CASE
-              WHEN LENGTH(comment) > 20 THEN SUBSTR(comment, 1, 20) || '...'
-              ELSE comment
+              WHEN
+                LENGTH(latest_comments.comment) > 20
+              THEN
+                SUBSTR(latest_comments.comment, 1, 20) || '...'
+              ELSE
+                latest_comments.comment
             END AS comment
           FROM
-            results LEFT JOIN comments
+            results
+          LEFT JOIN
+            latest_comments
           ON
-            results.hostname = comments.hostname
+            results.hostname = latest_comments.hostname
           GROUP BY
-            results.hostname
+            results.hostname, latest_comments.comment
           ORDER BY
             timestamp DESC
           LIMIT 10
