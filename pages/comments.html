@@ -43,13 +43,17 @@
             <th>User</th>
           </tr>
         </thead>
-        ${ _.comments.map(result =>
-        '<tr>' +
-          '<td>' + result.timestamp + '</td>' +
-          '<td>' + result.comment.replace('\n', '<br>') + '</td>' +
-          '<td>' + ( result.commenter || '<i>Anonymous Coward</i>') + '</td>' +
-          '</tr>'
-        ).join('\n') }
+        ${
+          _.comments.length === 0 ?
+          '<tr><td colspan="3">No comments yet</td></tr>' : 
+          _.comments.map(result =>
+          '<tr>' +
+            '<td>' + result.timestamp + '</td>' +
+            '<td>' + result.comment.replace('\n', '<br>') + '</td>' +
+            '<td>' + ( result.commenter || '<i>Anonymous Coward</i>') + '</td>' +
+            '</tr>'
+          ).join('\n')
+        }
       </table>
     </section>
 
