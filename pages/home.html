@@ -35,16 +35,22 @@
             <th>UTC Timestamp</th>
             <th>Hostname</th>
             <th>Average Round-Trip Time</th>
+            <th>Last comment</th>
           </tr>
         </thead>
         ${ _.results.map(result =>
-          '<tr>' +
-            '<td>' + result.timestamp + '</td>' +
-            '<td><a href="/?page=history&hostname=' +
+        '<tr>' +
+          '<td>' + result.timestamp + '</td>' +
+          '<td><a href="/?page=history&hostname=' +
               result.hostname + '">' + result.hostname +
+              '</a></td>' +
+          '<td>' + result.round_trip_time + '</td>' +
+          '<td>' +
+            '<a href="/?page=comments&hostname=' + result.hostname + '">' +
+              (result.comment? result.comment : '...') +
             '</a></td>' +
-            '<td>' + result.round_trip_time + '</td>' +
-            '</tr>'
+          '</td>' +
+        '</tr>'
         ).join('\n') }
       </table>
     </section>

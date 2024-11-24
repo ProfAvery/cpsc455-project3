@@ -29,49 +29,83 @@ app.get('/', async (req, res) => {
     return
   }
 
-  const _ = {}
+  const _ = {
+    hostname: req.query.hostname,
+    output: req.session.output,
+  }
 
   switch (page) {
     case 'home':
-      _.output = req.session.output;
       req.session.output = null;
 
-      _.results = await dbAll(`
-        SELECT
-          MAX(timestamp) AS timestamp,
-          hostname,
-          ROUND(AVG(round_trip_time), 2) as round_trip_time
-        FROM
-          results
-        GROUP BY
-          hostname
-        ORDER BY
-          timestamp DESC
-        LIMIT 10
-      `)
+      try {
+        _.results = await dbAll(`
+          SELECT
+            MAX(results.timestamp) AS timestamp,
+            results.hostname,
+            ROUND(AVG(round_trip_time), 2) as round_trip_time,
+            CASE
+              WHEN LENGTH(comment) > 20 THEN SUBSTR(comment, 1, 20) || '...'
+              ELSE comment
+            END AS comment
+          FROM
+            results LEFT JOIN comments
+          ON
+            results.hostname = comments.hostname
+          GROUP BY
+            results.hostname
+          ORDER BY
+            timestamp DESC
+          LIMIT 10
+        `)
+      } catch (err) {
+        console.error(err)
+      }
 
       break
 
     case 'history':
-      const hostname = req.query.hostname
-      _.hostname = hostname
-      const cmd = `dig +yaml ${hostname} 2>&1`
-      const { stdout } = await childProcessExec(cmd)
-      const response = yaml.parse(stdout)
-      _.answer = response[0].message.response_message_data?.ANSWER_SECTION?.join('\n')
-      console.log(_.answer)
+      const cmd = `dig +yaml ${_.hostname} 2>&1`
 
-      _.history = await dbAll(`
-        SELECT
-          *
-        FROM
-          results
-        WHERE
-          hostname = '${hostname}'
-        ORDER BY
-          timestamp DESC
-        LIMIT 100
-      `)
+      try {
+        const { stdout } = await childProcessExec(cmd)
+        const response = yaml.parse(stdout)
+
+        _.answer = response[0].message.response_message_data?.ANSWER_SECTION?.join('\n')
+
+        _.history = await dbAll(`
+          SELECT
+            *
+          FROM
+            results
+          WHERE
+            hostname = '${_.hostname}'
+          ORDER BY
+            timestamp DESC
+          LIMIT 100
+        `)
+      } catch (err) {
+        console.error(err)
+      }
+
+      break
+
+    case 'comments':
+      try {
+        _.comments = await dbAll(`
+          SELECT
+            *
+          FROM
+            comments
+          WHERE
+            hostname = '${_.hostname}'
+          ORDER BY
+            timestamp DESC
+          LIMIT 100
+        `)
+      } catch (err) {
+        console.error(err)
+      }
 
       break
 
@@ -93,6 +127,7 @@ app.get('/', async (req, res) => {
 app.post('/ping', async (req, res) => {
   const hostname = req.body.hostname
   const cmd = `ping -c 4 ${hostname} 2>&1`
+
   try {
     const { stdout } = await childProcessExec(cmd)
     req.session.output = stdout
@@ -108,12 +143,26 @@ app.post('/ping', async (req, res) => {
   res.redirect('/?page=home')
 })
 
+app.post('/comments', async (req, res) => {
+  const { hostname, comment, commenter } = req.body
+
+  try {
+    await dbExec(`
+      INSERT INTO comments(hostname, comment, commenter)
+      VALUES ('${hostname}', '${comment}', '${commenter}')`)
+  } catch (err) {
+    console.error(err)
+  }
+
+  res.redirect(`/?page=comments&hostname=${hostname}`)
+})
+
 app.listen(process.env.PORT, async () => {
   const exists = await dbGet(`
     SELECT 1
     FROM sqlite_master
     WHERE type = 'table'
-    AND name = 'hosts'
+    AND name = 'results'
   `)
 
   if (!exists) {

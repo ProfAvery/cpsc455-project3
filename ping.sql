@@ -7,5 +7,6 @@ CREATE TABLE results(
 CREATE TABLE comments(
     hostname VARCHAR,
     comment TEXT,
+    commenter VARCHAR,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );

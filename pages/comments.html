@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Pingy McPingface</title>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+</head>
+
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/?page=history&hostname=${_.hostname}">History</a></li>
+      </ul>
+    </nav>
+    <h1>User comments on ${ _.hostname}</h1>
+  </header>
+
+  <main>
+    <section>
+      <form method="POST" action="/comments">
+        <p>
+          <label for="comment">Comment:</label>
+          <textarea id="comment" name="comment" rows="5"></textarea>
+        </p>
+        <p>
+          <label for="commenter">Your Name:</label>
+          <input type="text" id="commenter" name="commenter">
+        </p>
+        <input type="hidden" name="hostname" value="${_.hostname}">
+        <p>
+          <button type="submit">Comment</button>
+      </form>
+    </section>
+    <hr>
+    <section>
+      <table>
+        <thead>
+          <tr>
+            <th>UTC Timestamp</th>
+            <th>Comment</th>
+            <th>User</th>
+          </tr>
+        </thead>
+        ${ _.comments.map(result =>
+        '<tr>' +
+          '<td>' + result.timestamp + '</td>' +
+          '<td>' + result.comment.replace('\n', '<br>') + '</td>' +
+          '<td>' + ( result.commenter || '<i>Anonymous Coward</i>') + '</td>' +
+          '</tr>'
+        ).join('\n') }
+      </table>
+    </section>
+
+    <article>
+    </article>
+  </main>
+</body>
+
+</html>
